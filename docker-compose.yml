@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tss-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-tss_wallet}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-tss_wallet_secret}
+      POSTGRES_DB: ${DB_NAME:-tss_wallet_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-tss_wallet} -d ${DB_NAME:-tss_wallet_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tss-network
+
+  # TSS Wallet Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tss-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Server
+      SERVER_PORT: 8080
+      SERVER_HOST: 0.0.0.0
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-tss_wallet}
+      DB_PASSWORD: ${DB_PASSWORD:-tss_wallet_secret}
+      DB_NAME: ${DB_NAME:-tss_wallet_db}
+      DB_SSL_MODE: disable
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+
+      # Rate Limiting
+      RATE_LIMIT_RPS: ${RATE_LIMIT_RPS:-10}
+      RATE_LIMIT_BURST: ${RATE_LIMIT_BURST:-20}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - tss-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tss-network:
+    driver: bridge
