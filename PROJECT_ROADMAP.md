@@ -1,7 +1,7 @@
 # TSS Wallet Backend - Project Roadmap
 
-**Last Updated:** November 30, 2025
-**Current Phase:** Phase 2 Complete - Preparing for True MPC Architecture
+**Last Updated:** December 1, 2025
+**Current Phase:** Phase 3.1 Complete - Relay Server Implemented
 **Synced With:** Android Production Roadmap v1.0.0
 
 ---
@@ -177,7 +177,7 @@ Since we chose **Go + bnb-chain/tss-lib**, we can use **Gomobile** to:
 
 ---
 
-## Phase 3: True MPC Architecture - PLANNED 🚧
+## Phase 3: True MPC Architecture - IN PROGRESS 🔄
 
 ### Timeline Overview
 
@@ -215,7 +215,7 @@ Since we chose **Go + bnb-chain/tss-lib**, we can use **Gomobile** to:
 
 ---
 
-### Phase 3.1: Backend "Dumb Pipe" Relay Server (Week 3-4)
+### Phase 3.1: Backend "Dumb Pipe" Relay Server (Week 3-4) - ✅ COMPLETE
 
 #### Objective
 Transform backend from "Smart Compute Engine" to "Dumb Message Relay"
@@ -379,20 +379,20 @@ type WSPong struct {
 }
 ```
 
-#### Backend Tasks (Week 3-4)
+#### Backend Tasks (Week 3-4) - ✅ COMPLETE
 
 | Task | Status | Priority | Description |
 |------|--------|----------|-------------|
-| Redis Integration | ⬜ Pending | Critical | Add Redis for pub/sub message routing |
-| WebSocket Server | ⬜ Pending | Critical | gorilla/websocket implementation |
-| POST /relay/register | ⬜ Pending | Critical | Device registration endpoint |
-| POST /relay/session | ⬜ Pending | Critical | Session creation endpoint |
-| POST /relay/send | ⬜ Pending | Critical | Message sending endpoint |
-| GET /relay/messages | ⬜ Pending | High | Polling fallback endpoint |
-| WS /relay/ws | ⬜ Pending | High | WebSocket handler |
-| Archive TSS Logic | ⬜ Pending | Medium | Move keygen_service.go, signing_service.go to archive/ |
-| Backward Compat Layer | ⬜ Pending | Medium | Keep old API with feature flag |
-| Update Docker Compose | ⬜ Pending | Medium | Add Redis service |
+| Redis Integration | ✅ Done | Critical | Add Redis for pub/sub message routing |
+| WebSocket Server | ✅ Done | Critical | gorilla/websocket implementation |
+| POST /relay/register | ✅ Done | Critical | Device registration endpoint |
+| POST /relay/session | ✅ Done | Critical | Session creation endpoint |
+| POST /relay/send | ✅ Done | Critical | Message sending endpoint |
+| GET /relay/messages | ✅ Done | High | Polling fallback endpoint |
+| WS /relay/ws | ✅ Done | High | WebSocket handler |
+| Archive TSS Logic | ✅ Done | Medium | Move keygen_service.go, signing_service.go to archive/ |
+| Backward Compat Layer | ✅ Done | Medium | Keep old API with feature flag |
+| Update Docker Compose | ✅ Done | Medium | Add Redis service |
 
 #### New Database Schema
 
@@ -584,7 +584,7 @@ tss-wallet-backend/
 | 2.0.0-mvp | Nov 2025 | Week 2-3 - Signing complete |
 | 3.0.0-mvp | Nov 30, 2025 | Week 4 - Ethereum Integration complete |
 | 4.0.0-production | Nov 30, 2025 | Phase 2 - Production Infrastructure complete |
-| 5.0.0-relay | Planned | Phase 3.1 - Relay Server |
+| 5.0.0-relay | Dec 1, 2025 | Phase 3.1 - Relay Server complete ✅ |
 | 6.0.0-truempc | Planned | Phase 3 Complete - True MPC Architecture |
 
 ---
@@ -612,12 +612,12 @@ tss-wallet-backend/
 
 ## Success Metrics
 
-### Phase 3.1 Complete When:
-- [ ] Relay API fully functional (register, session, send, messages)
-- [ ] WebSocket server operational with pub/sub
-- [ ] Messages persist in database
-- [ ] Old API still works (backward compat)
-- [ ] Load test: 100 concurrent WebSocket connections
+### Phase 3.1 Complete When: ✅ ACHIEVED
+- [x] Relay API fully functional (register, session, send, messages)
+- [x] WebSocket server operational with pub/sub
+- [x] Messages persist in database (Redis + PostgreSQL)
+- [x] Old API still works (backward compat)
+- [ ] Load test: 100 concurrent WebSocket connections (TODO)
 
 ### Phase 3 Complete When:
 - [ ] Android KeyGen works entirely on-device
