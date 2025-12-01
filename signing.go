@@ -11,7 +11,16 @@ import (
 )
 
 /**
- * Signing HTTP Handlers - Week 2-3 Implementation
+ * Signing HTTP Handlers - DEPRECATED (Legacy MVP Version)
+ *
+ * ⚠️ DEPRECATION NOTICE:
+ * These endpoints run TSS signing on the SERVER, which is INSECURE for production.
+ * The server has access to ALL key shares and can sign transactions without user consent.
+ *
+ * For production, use the Relay API (/relay/*) which:
+ * - Only routes encrypted messages between devices
+ * - Has ZERO knowledge of key shares
+ * - Devices compute signatures locally
  *
  * API Design:
  *   POST /signing/start                    - Create signing session and execute
@@ -23,6 +32,8 @@ import (
  * 2. Backend loads key shares from keygen session
  * 3. Backend runs threshold signing protocol (2-of-3)
  * 4. Client retrieves signature via GET /signing/:signingId/signature
+ *
+ * Set LEGACY_MODE_ENABLED=false to disable these endpoints.
  */
 
 // StartSigningRequest represents the request to start signing
@@ -44,7 +55,13 @@ type SignatureResponse struct {
 
 // POST /signing/start
 // Creates signing session, loads key shares, and executes the signing protocol
+// DEPRECATED: Use /relay/* endpoints for production
 func StartSigning(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+	c.Header("X-Deprecated-Since", "v5.0.0")
+	c.Header("X-Sunset-Date", "2025-03-01")
+
 	var req StartSigningRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -107,7 +124,11 @@ func StartSigning(c *gin.Context) {
 
 // GET /signing/:signingId/status
 // Returns the current status of a signing session
+// DEPRECATED: Use /relay/* endpoints for production
 func GetSigningStatus(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+
 	signingID := c.Param("signingId")
 
 	status, err := signingService.GetSigningStatus(signingID)
@@ -121,7 +142,11 @@ func GetSigningStatus(c *gin.Context) {
 
 // GET /signing/:signingId/signature
 // Returns the final signature after signing completes
+// DEPRECATED: Use /relay/* endpoints for production
 func GetSignature(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+
 	signingID := c.Param("signingId")
 
 	sig, err := signingService.GetSignature(signingID)
@@ -152,7 +177,11 @@ func GetSignature(c *gin.Context) {
 
 // POST /signing/verify (optional utility endpoint)
 // Verifies a signature against the public key from keygen session
+// DEPRECATED: Use /relay/* endpoints for production
 func VerifySignatureHandler(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+
 	var req struct {
 		KeygenSessionID string `json:"keygenSessionId" binding:"required"`
 		Message         string `json:"message" binding:"required"`

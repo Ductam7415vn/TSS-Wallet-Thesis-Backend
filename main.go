@@ -57,16 +57,28 @@ func main() {
 		relay.InitWebSocket(cfg)
 	}
 
-	// Register KeyGen routes
-	RegisterKeyGenRoutes(router)
+	// Register Legacy routes (DEPRECATED - MVP mode)
+	// These endpoints run TSS on server and are INSECURE for production
+	// Set LEGACY_MODE_ENABLED=false to disable
+	if cfg.LegacyModeEnabled {
+		log.Println("")
+		log.Println("⚠️  WARNING: Legacy Mode is ENABLED")
+		log.Println("   /keygen/* and /signing/* endpoints are DEPRECATED")
+		log.Println("   These endpoints run TSS on SERVER (insecure for production)")
+		log.Println("   Set LEGACY_MODE_ENABLED=false to disable")
+		log.Println("")
 
-	// Register Signing routes (Week 2-3)
-	RegisterSigningRoutes(router)
+		// Register KeyGen routes (DEPRECATED)
+		RegisterKeyGenRoutes(router)
+
+		// Register Signing routes (DEPRECATED)
+		RegisterSigningRoutes(router)
+	}
 
 	// Register Ethereum routes (Week 4)
 	RegisterEthereumRoutes(router)
 
-	// Register Relay routes (Phase 3)
+	// Register Relay routes (Phase 3 - Production)
 	relay.RegisterRelayRoutes(router)
 
 	// Print available routes

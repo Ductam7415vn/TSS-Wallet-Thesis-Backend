@@ -12,7 +12,16 @@ import (
 )
 
 /**
- * KeyGen HTTP Handlers - Simplified MVP Version
+ * KeyGen HTTP Handlers - DEPRECATED (Legacy MVP Version)
+ *
+ * ⚠️ DEPRECATION NOTICE:
+ * These endpoints run TSS computation on the SERVER, which is INSECURE for production.
+ * The server has access to ALL key shares and can sign transactions without user consent.
+ *
+ * For production, use the Relay API (/relay/*) which:
+ * - Only routes encrypted messages between devices
+ * - Has ZERO knowledge of key shares
+ * - Devices compute TSS locally
  *
  * API Design:
  *   POST /keygen/start           - Create session, init all parties, execute protocol
@@ -24,6 +33,8 @@ import (
  * - Backend handles all message routing
  * - Protocol runs synchronously
  * - PartyID is semantic (device1, device2, device3)
+ *
+ * Set LEGACY_MODE_ENABLED=false to disable these endpoints.
  */
 
 // StartKeyGenRequest represents the request to start keygen
@@ -35,7 +46,13 @@ type StartKeyGenRequest struct {
 
 // POST /keygen/start
 // Creates session, initializes all parties, and executes the keygen protocol
+// DEPRECATED: Use /relay/* endpoints for production
 func StartKeyGen(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+	c.Header("X-Deprecated-Since", "v5.0.0")
+	c.Header("X-Sunset-Date", "2025-03-01")
+
 	var req StartKeyGenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -104,7 +121,11 @@ func StartKeyGen(c *gin.Context) {
 
 // GET /keygen/:sessionId/status
 // Returns the current status of a keygen session
+// DEPRECATED: Use /relay/* endpoints for production
 func GetSessionStatus(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+
 	sessionID := c.Param("sessionId")
 
 	status, err := keygenService.GetSessionStatus(sessionID)
@@ -118,7 +139,11 @@ func GetSessionStatus(c *gin.Context) {
 
 // GET /keygen/:sessionId/share/:partyId
 // Returns the key share for a specific party after keygen completes
+// DEPRECATED: Use /relay/* endpoints for production
 func GetKeyShare(c *gin.Context) {
+	// Add deprecation warning header
+	c.Header("X-Deprecation-Warning", "This endpoint is deprecated. Use /relay/* for production.")
+
 	sessionID := c.Param("sessionId")
 	partyId := c.Param("partyId")
 

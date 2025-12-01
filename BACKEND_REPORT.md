@@ -554,6 +554,9 @@ RELAY_MESSAGE_TTL=3600       # Message TTL in seconds (1 hour)
 RELAY_SESSION_TTL=86400      # Session TTL in seconds (24 hours)
 RELAY_DEVICE_TTL=604800      # Device registration TTL (7 days)
 RELAY_CLEANUP_INTERVAL=300   # Cleanup interval (5 minutes)
+
+# Legacy Mode (DEPRECATED)
+LEGACY_MODE_ENABLED=false    # Set to false to disable /keygen/* and /signing/*
 ```
 
 ### Quick Start
@@ -696,16 +699,35 @@ dependencies {
 
 ## API Quick Reference
 
-### Legacy APIs (Still Working - Backward Compatibility)
+### Legacy APIs (⚠️ DEPRECATED - Will be removed)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/keygen/start` | Server-side KeyGen |
-| GET | `/keygen/:sessionId/status` | Check status |
-| GET | `/keygen/:sessionId/share/:partyId` | Get key share |
-| POST | `/signing/start` | Server-side Signing |
-| GET | `/signing/:signingId/signature` | Get signature |
-| POST | `/ethereum/quick-send` | Send ETH |
+> **⚠️ DEPRECATION NOTICE**
+>
+> These endpoints are **DEPRECATED** since v5.0.0 and will be removed in a future version.
+> They run TSS computation on the SERVER, which is **INSECURE** for production.
+> The server has access to ALL key shares and can sign transactions without user consent.
+>
+> **For production, use the Relay API (`/relay/*`) instead.**
+>
+> **Configuration:**
+> - Set `LEGACY_MODE_ENABLED=false` to disable these endpoints
+> - Default: `true` (for backward compatibility during migration)
+> - **Sunset Date:** March 1, 2025
+
+| Method | Endpoint | Description | Status |
+|--------|----------|-------------|--------|
+| POST | `/keygen/start` | Server-side KeyGen | ⚠️ Deprecated |
+| GET | `/keygen/:sessionId/status` | Check status | ⚠️ Deprecated |
+| GET | `/keygen/:sessionId/share/:partyId` | Get key share | ⚠️ Deprecated |
+| POST | `/signing/start` | Server-side Signing | ⚠️ Deprecated |
+| GET | `/signing/:signingId/signature` | Get signature | ⚠️ Deprecated |
+| POST | `/signing/verify` | Verify signature | ⚠️ Deprecated |
+| POST | `/ethereum/quick-send` | Send ETH | Active |
+
+**Deprecation Headers:** All legacy endpoints return these HTTP headers:
+- `X-Deprecation-Warning: This endpoint is deprecated. Use /relay/* for production.`
+- `X-Deprecated-Since: v5.0.0`
+- `X-Sunset-Date: 2025-03-01`
 
 ### New Relay APIs (Phase 3.1)
 
@@ -731,7 +753,8 @@ dependencies {
 | 2.0.0-mvp | Nov 2025 | Week 2-3 - Signing complete |
 | 3.0.0-mvp | Nov 30, 2025 | Week 4 - Ethereum Integration |
 | 4.0.0-production | Nov 30, 2025 | Phase 2 - Production Infrastructure |
-| **5.0.0-relay** | **Dec 1, 2025** | **Phase 3.1 - Relay Server ✅** |
+| 5.0.0-relay | Dec 1, 2025 | Phase 3.1 - Relay Server |
+| **5.1.0-deprecation** | **Dec 1, 2025** | **Legacy Mode Deprecated ✅** |
 | 6.0.0-truempc | Planned | Phase 3 Complete - True MPC |
 
 ---

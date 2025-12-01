@@ -40,10 +40,13 @@ type Config struct {
 	WSMaxMessageSize int64 // Max message size in bytes
 
 	// Relay
-	RelayMessageTTL    int // Message TTL in seconds
-	RelaySessionTTL    int // Session TTL in seconds
-	RelayDeviceTTL     int // Device registration TTL in seconds
+	RelayMessageTTL      int // Message TTL in seconds
+	RelaySessionTTL      int // Session TTL in seconds
+	RelayDeviceTTL       int // Device registration TTL in seconds
 	RelayCleanupInterval int // Cleanup interval in seconds
+
+	// Legacy Mode (MVP - Server-side TSS)
+	LegacyModeEnabled bool // Enable deprecated /keygen/* and /signing/* endpoints
 
 	// Environment
 	Environment string // "development", "production"
@@ -89,6 +92,10 @@ func LoadConfig() *Config {
 		RelaySessionTTL:      getEnvInt("RELAY_SESSION_TTL", 86400),     // 24 hours
 		RelayDeviceTTL:       getEnvInt("RELAY_DEVICE_TTL", 604800),     // 7 days
 		RelayCleanupInterval: getEnvInt("RELAY_CLEANUP_INTERVAL", 300), // 5 minutes
+
+		// Legacy Mode (MVP - Server-side TSS) - DEPRECATED
+		// Set to false in production to disable insecure server-side TSS
+		LegacyModeEnabled: getEnvBool("LEGACY_MODE_ENABLED", true), // Default true for backward compat
 
 		// Environment
 		Environment: getEnv("ENVIRONMENT", "development"),
@@ -140,6 +147,15 @@ func getEnvInt64(key string, defaultValue int64) int64 {
 	if value := os.Getenv(key); value != "" {
 		if intValue, err := strconv.ParseInt(value, 10, 64); err == nil {
 			return intValue
+		}
+	}
+	return defaultValue
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if boolValue, err := strconv.ParseBool(value); err == nil {
+			return boolValue
 		}
 	}
 	return defaultValue
