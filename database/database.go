@@ -142,6 +142,49 @@ func RunMigrations() error {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)`,
 
+		// ============================================================
+		// RELAY SERVER TABLES (Phase 3 - True MPC)
+		// ============================================================
+
+		// Relay Devices table - registered devices for message relay
+		`CREATE TABLE IF NOT EXISTS relay_devices (
+			id SERIAL PRIMARY KEY,
+			device_id VARCHAR(64) UNIQUE NOT NULL,
+			public_key TEXT NOT NULL,
+			push_token TEXT,
+			is_online BOOLEAN DEFAULT false,
+			last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+
+		// Relay Sessions table - MPC session coordination
+		`CREATE TABLE IF NOT EXISTS relay_sessions (
+			id SERIAL PRIMARY KEY,
+			session_id VARCHAR(64) UNIQUE NOT NULL,
+			session_type VARCHAR(32) NOT NULL,
+			parties JSONB NOT NULL,
+			joined_parties JSONB DEFAULT '[]',
+			threshold INTEGER NOT NULL,
+			status VARCHAR(32) NOT NULL DEFAULT 'waiting',
+			current_round INTEGER DEFAULT 0,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+
+		// Relay Messages table - encrypted messages between devices
+		`CREATE TABLE IF NOT EXISTS relay_messages (
+			id SERIAL PRIMARY KEY,
+			message_id VARCHAR(128) UNIQUE NOT NULL,
+			session_id VARCHAR(64) NOT NULL,
+			from_device VARCHAR(64) NOT NULL,
+			to_device VARCHAR(64) NOT NULL,
+			payload TEXT NOT NULL,
+			round INTEGER DEFAULT 0,
+			is_delivered BOOLEAN DEFAULT false,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			delivered_at TIMESTAMP
+		)`,
+
 		// Indexes for performance
 		`CREATE INDEX IF NOT EXISTS idx_keygen_sessions_status ON keygen_sessions(status)`,
 		`CREATE INDEX IF NOT EXISTS idx_keygen_sessions_eth_address ON keygen_sessions(eth_address)`,
@@ -151,6 +194,14 @@ func RunMigrations() error {
 		`CREATE INDEX IF NOT EXISTS idx_eth_transactions_network ON eth_transactions(network)`,
 		`CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at)`,
 		`CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash)`,
+
+		// Relay indexes
+		`CREATE INDEX IF NOT EXISTS idx_relay_devices_device_id ON relay_devices(device_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_relay_sessions_session_id ON relay_sessions(session_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_relay_sessions_status ON relay_sessions(status)`,
+		`CREATE INDEX IF NOT EXISTS idx_relay_messages_session_id ON relay_messages(session_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_relay_messages_to_device ON relay_messages(to_device)`,
+		`CREATE INDEX IF NOT EXISTS idx_relay_messages_delivered ON relay_messages(is_delivered)`,
 	}
 
 	for _, migration := range migrations {

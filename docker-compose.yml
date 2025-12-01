@@ -20,6 +20,24 @@ services:
     networks:
       - tss-network
 
+  # Redis for Relay Server
+  redis:
+    image: redis:7-alpine
+    container_name: tss-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tss-network
+
   # TSS Wallet Backend
   backend:
     build:
@@ -29,6 +47,8 @@ services:
     restart: unless-stopped
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       # Server
@@ -44,6 +64,12 @@ services:
       DB_NAME: ${DB_NAME:-tss_wallet_db}
       DB_SSL_MODE: disable
 
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
+
       # JWT
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
@@ -51,6 +77,18 @@ services:
       # Rate Limiting
       RATE_LIMIT_RPS: ${RATE_LIMIT_RPS:-10}
       RATE_LIMIT_BURST: ${RATE_LIMIT_BURST:-20}
+
+      # WebSocket
+      WS_PING_INTERVAL: ${WS_PING_INTERVAL:-30}
+      WS_PONG_TIMEOUT: ${WS_PONG_TIMEOUT:-10}
+      WS_WRITE_TIMEOUT: ${WS_WRITE_TIMEOUT:-10}
+      WS_MAX_MESSAGE_SIZE: ${WS_MAX_MESSAGE_SIZE:-65536}
+
+      # Relay
+      RELAY_MESSAGE_TTL: ${RELAY_MESSAGE_TTL:-3600}
+      RELAY_SESSION_TTL: ${RELAY_SESSION_TTL:-86400}
+      RELAY_DEVICE_TTL: ${RELAY_DEVICE_TTL:-604800}
+      RELAY_CLEANUP_INTERVAL: ${RELAY_CLEANUP_INTERVAL:-300}
     ports:
       - "8080:8080"
     healthcheck:
@@ -64,6 +102,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

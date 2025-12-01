@@ -1,4 +1,6 @@
-package main
+// Package archive contains the MVP TSS logic (server-side computation).
+// See keygen.go for package documentation.
+package archive
 
 import (
 	"encoding/base64"
@@ -78,7 +80,7 @@ func StartSigning(c *gin.Context) {
 	signingID := fmt.Sprintf("signing_%d", time.Now().UnixNano())
 
 	// Create and execute signing session
-	if err := signingService.CreateAndExecuteSigning(
+	if err := SigningServiceInstance.CreateAndExecuteSigning(
 		signingID,
 		req.KeygenSessionID,
 		messageBytes,
@@ -93,7 +95,7 @@ func StartSigning(c *gin.Context) {
 	}
 
 	// Get status after completion
-	status, _ := signingService.GetSigningStatus(signingID)
+	status, _ := SigningServiceInstance.GetSigningStatus(signingID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"signingId":       signingID,
@@ -110,7 +112,7 @@ func StartSigning(c *gin.Context) {
 func GetSigningStatus(c *gin.Context) {
 	signingID := c.Param("signingId")
 
-	status, err := signingService.GetSigningStatus(signingID)
+	status, err := SigningServiceInstance.GetSigningStatus(signingID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -124,7 +126,7 @@ func GetSigningStatus(c *gin.Context) {
 func GetSignature(c *gin.Context) {
 	signingID := c.Param("signingId")
 
-	sig, err := signingService.GetSignature(signingID)
+	sig, err := SigningServiceInstance.GetSignature(signingID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -182,7 +184,7 @@ func VerifySignatureHandler(c *gin.Context) {
 	}
 
 	// Verify
-	valid, err := signingService.VerifySignature(req.KeygenSessionID, messageBytes, sigBytes)
+	valid, err := SigningServiceInstance.VerifySignature(req.KeygenSessionID, messageBytes, sigBytes)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
